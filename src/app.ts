@@ -61,78 +61,84 @@ wss.on('connection', (ws: WebSocket, req) => {
   console.log('connection opened. %d clients', wss.clients.size);
   if(req.url != null){
     //TODO: emulator and browser might as well differentiate from each other in their request
-  
-    //e.g. emulator could request /?type=emulator&id=42
 
+    //check if from emulator first - may not even need emu in the request
+    //don't require emulator to give ID
+
+        //e.g. emulator could request /?type=emulator&id=42
     //url is "/?id=42"
     let reqParams = new URLSearchParams(req.url.substring(1));
 
-    //check has "type", and "id"
-    if(reqParams.has("id") && reqParams.has("type")){
-      let requestType = reqParams.get("type")!;
-      let requestId = reqParams.get("id")!;
-      console.log(`connection from type: ${requestType}, id: ${requestId}`);
+    if(!reqParams.has("type")){
+      console.log("malformed request from client, requires type query string");
+      ws.send("provide type query string");
+      ws.terminate();
+      return;
+    }
 
-      if(requestType === "emulator"){
-        //TODO: don't assume this!
-        //For now, assume unique ID
-        sessions.push(new EmuSession(requestId, ws));
-        const session = sessions[sessions.length - 1];
-        console.log(`emulator connection received, creating session. ${sessions.length} total sessions`);
-        ws.send(`hello emu with id ${ requestId }`);
+    let requestType = reqParams.get("type")!;
+    
+    if(requestType === "emulator"){
+      //TODO: don't assume this!
+      //For now, assume unique ID
+      sessions.push(new EmuSession(String(emuId++), ws));
+      const session = sessions[sessions.length - 1];
+      console.log(`emulator connection received, creating session. ${sessions.length} total sessions`);
+      let sessionStartReply: Object = {inviteUrl: `http://localhost:8999/${session.id}`};
+      ws.send(JSON.stringify(sessionStartReply));
+      ws.on('message', (message: string) => {
+        if(session.active()){
+          //There is an active session between the emu and browser, send data to browser
+          console.log("emu message received, fwding to browser");
+          session.browserClient!.send(message);
+        }else{
+          console.log("emu message received, but no active session");
+        }
+      });
+      //emulator connection close
+      ws.onclose = (event: WebSocket.CloseEvent)=>{
+        //close down session
+        if(session.browserClient != null){
+          session.browserClient.send("emuator client closing");
+          session.browserClient.close();
+        }
+        const num_before = sessions.length;
+        sessions = sessions.filter(function( sess ) {
+          return session !== sess;
+        });
+        console.log(`emulator client closed, sessions from ${num_before} to ${sessions.length}`);
+      }
+    }else if(requestType === "browser"){
+      if(!reqParams.has("id")){
+        console.log("malformed request from browser client, requires id query string");
+        ws.send("provide id query string");
+        ws.terminate();
+        return;
+      }
+      let requestId = reqParams.get("id")!;
+      ws.send(`hello browser with id ${ requestId }`);
+      
+      //check for matching session with emulator
+      const session = sessions.find( el => el.id == requestId);
+      if(session != null && session.emuActive()){
+        //add browser to session
+        session.browserClient = ws;
+        session.emuClient.send("browser client connected");
+
         ws.on('message', (message: string) => {
           if(session.active()){
-            //There is an active session between the emu and browser, send data to browser
-            console.log("emu message received, fwding to browser");
-            session.browserClient!.send(message);
+            console.log("browser message received, fwding to emu");
+            session.emuClient.send(message);
           }else{
-            console.log("emu message received, but no active session");
+            console.log("browser message received, but session not active??");
           }
         });
-        //emulator connection close
-        ws.onclose = (event: WebSocket.CloseEvent)=>{
-          //close down session
-          if(session.browserClient != null){
-            session.browserClient.send("emuator client closing");
-            session.browserClient.close();
-          }
-          const num_before = sessions.length;
-          sessions = sessions.filter(function( sess ) {
-            return session !== sess;
-          });
-          console.log(`emulator client closed, sessions from ${num_before} to ${sessions.length}`);
-        }
-      }else if(requestType === "browser"){
-        ws.send(`hello browser with id ${ requestId }`);
-        
-        //check for matching session with emulator
-        const session = sessions.find( el => el.id == requestId);
-        if(session?.emuActive()){
-          //add browser to session
-          session.browserClient = ws;
-          session.emuClient.send("browser client connected");
 
-          ws.on('message', (message: string) => {
-            if(session.active()){
-              console.log("browser message received, fwding to emu");
-              session.emuClient.send(message);
-            }else{
-              console.log("browser message received, but session not active??");
-            }
-          });
-
-          //TODO: anything on browser close? we do need to notify emulator
-          ws.onclose = (event: WebSocket.CloseEvent) => {
-            session.emuClient.send("browser client closing");
-          };
-
-        }
+        //TODO: anything on browser close? we do need to notify emulator
+        ws.onclose = (event: WebSocket.CloseEvent) => {
+          session.emuClient.send("browser client closing");
+        };
       }
-
-    }else{
-      //return error - disconnect socket?
-      ws.send("websocket request missing fields, terminating connection");
-      ws.terminate();
     }
   }else{
     ws.send("websocket request url null, terminating connection");
