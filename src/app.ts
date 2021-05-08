@@ -14,7 +14,7 @@ app.use(express.static('client'));
 //So close should work on clean close, if not clean, can implement hearbeats wi
 //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/20780#issuecomment-518051061
 
-let emuId = 0;
+let globalSessionId = 0;
 
 //initialize a simple http server
 const httpServer = http.createServer(app);
@@ -74,9 +74,12 @@ wss.on('connection', (ws: WebSocket, req) => {
     if(requestType === "emulator"){
       //TODO: don't assume this!
       //For now, assume unique ID
-      sessions.push(new EmuSession(String(emuId++), ws));
+      // I thought that sharing the global 
+      // https://stackoverflow.com/a/5481788/13371278
+      var sessionId = globalSessionId++;
+      sessions.push(new EmuSession(String(sessionId), ws));
       const session = sessions[sessions.length - 1];
-      console.log(`emulator connection received, creating session. ${sessions.length} total sessions`);
+      console.log(`emulator connection received, creating session with ID ${sessionId}. ${sessions.length} total sessions`);
       let sessionStartReply: Object = {inviteUrl: `http://localhost:8999/${session.id}`};
       ws.send(JSON.stringify(sessionStartReply));
       ws.on('message', (message: string) => {
@@ -117,6 +120,7 @@ wss.on('connection', (ws: WebSocket, req) => {
         //add browser to session
         session.browserClient = ws;
         session.emuClient.send("browser client connected");
+        console.log(`browser connected to session ${session.id}`);
 
         ws.on('message', (message: string) => {
           if(session.active()){
@@ -157,42 +161,8 @@ httpServer.listen(process.env.PORT || 8999, () => {
   }
 });
 
-//server on close is for when server closes, notn clients.
-
-// wss.on('close', (ws: WebSocket) => {
-//   console.log('connection closed. %d clients', wss.clients.size);
-//   //TODO: find the session this belongs to - send message to other party, terminate them
-//   //TODO: remove session from list
-//   var otherWs: WebSocket | undefined;
-//   var emuSession: EmuSession | undefined;
-//   //Could probably do this more efficienlty by mapping with the id?
-//   sessions.forEach( (session) => {
-//     if(session.browserClient == ws){
-//       otherWs = session.emuClient;
-//       emuSession = session;
-//       return;
-//     }
-//     if(session.emuClient == ws){
-//       otherWs = session.browserClient;
-//       emuSession = session;
-//       return;
-//     }
-//   });
-  
-//   //Clean up session if closing socket belonged to one
-//   if(emuSession != null){
-//     if(otherWs != null){
-//       //TODO: send more structured message
-//       otherWs.send("Other socket disconnect, terminating");
-//       otherWs.terminate();
-//     }
-//     //remove session from list
-//     console.log(`before filter, ${sessions.length} total sessions`);
-//     sessions = sessions.filter(function( session ) {
-//       return session !== emuSession;
-//     });
-//     console.log(`after filter, ${sessions.length} total sessions`);
-//   }
-// });
+wss.on('close', (ws: WebSocket) => {
+  console.log('WS Server closing closing');
+});
 
 
