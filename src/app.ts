@@ -5,15 +5,8 @@ import path from 'path';
 import url from 'url';
 
 const app = express();
+app.use(express.static('client'));
 
-//TODO: make homepage index.html instructions on how to connect to emulator
-app.use(express.static("client"));
-
-app.get('/', function(req, res, next){
-  req.route
-  console.log("request received. path: %s, route: %s, url: %s", req.path, req.route, req.originalUrl);
-  res.sendFile(path.join(__dirname, '..', '/client/index.html'));
-});
 
 //https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
 // - pongs are automatically sent in response.
@@ -138,6 +131,11 @@ wss.on('connection', (ws: WebSocket, req) => {
         ws.onclose = (event: WebSocket.CloseEvent) => {
           session.emuClient.send("browser client closing");
         };
+      }else{
+        console.log("client connected, but no active matching session");
+        ws.send("No matching session");
+        ws.terminate();
+        return;
       }
     }
   }else{
