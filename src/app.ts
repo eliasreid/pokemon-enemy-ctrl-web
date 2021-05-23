@@ -74,7 +74,7 @@ wss.on('connection', (ws: WebSocket, req) => {
     if(requestType === "emulator"){
       //TODO: don't assume this!
       //For now, assume unique ID
-      // I thought that sharing the global 
+      // I thought that sharing the global would be bad, but maybe not?
       // https://stackoverflow.com/a/5481788/13371278
       var sessionId = globalSessionId++;
       sessions.push(new EmuSession(String(sessionId), ws));
