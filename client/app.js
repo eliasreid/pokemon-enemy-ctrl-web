@@ -8,7 +8,7 @@
 let button = document.getElementById("connect");
 button.onclick = function(){
   //connect to websocket server
-  let webSocket = new WebSocket("ws://localhost:8999");
+  let webSocket = new WebSocket("ws://ec2-18-191-134-165.us-east-2.compute.amazonaws.com:80");
   webSocket.onopen = function(event){
     console.log("websocket opened, event: " + event.data);
 

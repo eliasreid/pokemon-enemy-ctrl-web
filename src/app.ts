@@ -80,7 +80,7 @@ wss.on('connection', (ws: WebSocket, req) => {
       sessions.push(new EmuSession(String(sessionId), ws));
       const session = sessions[sessions.length - 1];
       console.log(`emulator connection received, creating session with ID ${sessionId}. ${sessions.length} total sessions`);
-      let sessionStartReply: Object = {inviteUrl: `http://localhost:8999/${session.id}`};
+      let sessionStartReply: Object = {inviteUrl: `http://ec2-18-191-134-165.us-east-2.compute.amazonaws.com:80/session/?type=browser&id=${session.id}`};
       ws.send(JSON.stringify(sessionStartReply));
       ws.on('message', (message: string) => {
         if(session.active()){
