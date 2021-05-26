@@ -60,10 +60,10 @@ function setPokemonButtons(pokemon){
     btn.style.visibility = 'hidden';
     btn.disabled = true;
   });
-  pokemon.slice(0, 6).forEach((pokemonName, i) => {
+  pokemon.slice(0, 6).forEach((mon, i) => {
     mon_buttons[i].style.visibility = 'visible';
-    mon_buttons[i].disabled = false;
-    mon_buttons[i].innerHTML = pokemonName;
+    mon_buttons[i].disabled = mon.status === "fainted";
+    mon_buttons[i].innerHTML = mon.name + " (" + mon.status + ")";
   });
 }
 
