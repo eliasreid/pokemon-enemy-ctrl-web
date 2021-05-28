@@ -20,7 +20,6 @@ webSocket.onmessage = function(event){
   try{
     const jsonMsg = JSON.parse(event.data);
 
-
     if(jsonMsg.hasOwnProperty('msgType') && jsonMsg.msgType === 'availableActions'){
       setPokemonButtons(jsonMsg.pokemon);
       setMoveButtons(jsonMsg.moves);
@@ -80,7 +79,7 @@ function setMoveButtons(moves){
   });
 }
 
-function setItemButtons(moves){
+function setItemButtons(items){
   var item_buttons = Array.from(document.getElementById("item-buttons").getElementsByTagName('button'));
   item_buttons.forEach( btn => {
     btn.style.visibility = 'hidden';
