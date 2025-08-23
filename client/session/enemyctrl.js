@@ -3,15 +3,14 @@
 
 //Should contain id=<session_id>
 let sessionParams = (new URL(location)).searchParams;
-// ec2-18-191-134-165.us-east-2.compute.amazonaws.com
-let websocket_req = "ws://ec2-18-191-134-165.us-east-2.compute.amazonaws.com:80/?type=browser&" +  sessionParams;
+let websocket_req = "ws://localhost:8999/?type=browser&" +  sessionParams;
 console.log("opening websocket with %s", websocket_req);
 
 let webSocket = new WebSocket(websocket_req);
 
 webSocket.onopen = function(event){
   //enable test send button
-  document.getElementById('status').innerText = "CONNECTED! try testsend button";
+  document.getElementById('status').innerText = "CONNECTED!";
   document.getElementById('testsend').disabled = false;
 };
 
@@ -98,7 +97,7 @@ webSocket.onclose = function(event){
 };
 
 webSocket.onerror = function(event){
-  console.log("websocket error");
+  console.error("websocket error", event);
 }
 
 let mon_buttons = Array.from(document.getElementById("pokemon-buttons").getElementsByTagName('button'));
