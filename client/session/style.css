@@ -5,7 +5,7 @@
   align-items: flex-start;
 }
 
-.move-buttons {
+.action-buttons {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: column;
