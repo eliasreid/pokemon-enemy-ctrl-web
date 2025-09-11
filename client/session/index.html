@@ -7,29 +7,40 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
   <link rel="manifest" href="/icons/site.webmanifest">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <button disabled="true" id="testsend" type="button">testsend</button>
-  <div id="move-buttons">
-    <label>Moves: </label>
-    <button disabled="true" type="button">move 0</button>
-    <button disabled="true" type="button">move 1</button>
-    <button disabled="true" type="button">move 2</button>
-    <button disabled="true" type="button">move 4</button>
-  </div>
-  <div id="pokemon-buttons">
-    <label>Party: </label>
-    <button disabled="true" type="button" >mon 0</button>
-    <button disabled="true" type="button" >mon 1</button>
-    <button disabled="true" type="button" >mon 2</button>
-    <button disabled="true" type="button" >mon 4</button>
-    <button disabled="true" type="button" >mon 5</button>
-    <button disabled="true" type="button" >mon 6</button>
-  </div>
-  <div id="item-buttons">
-    <label>Items: </label>
-    <button disabled="true" type="button">item 0</button>
-    <button disabled="true" type="button">item 1</button>
+  <div class="action-selection">
+    <div class="action-buttons">
+      <div class="action-row">
+        <button disabled="true" type="button">move 0</button>
+        <button disabled="true" type="button">move 1</button>
+      </div>
+      <div class="action-row">
+        <button disabled="true" type="button">move 1</button>
+        <button disabled="true" type="button">move 2</button>
+      </div>
+    </div>
+    <div class="action-buttons">
+
+      <div class="action-row">
+        <button disabled="true" type="button">mon</button>
+        <button disabled="true" type="button">mon</button>
+      </div>
+      <div class="action-row">
+        <button disabled="true" type="button">mon</button>
+        <button disabled="true" type="button">mon</button>
+      </div>
+      <div class="action-row">
+        <button disabled="true" type="button">mon</button>
+        <button disabled="true" type="button">mon</button>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button disabled="true" type="button">item 0</button>
+      <button disabled="true" type="button">item 1</button>
+    </div>
   </div>
 
   <label id="status">NOT CONNECTED?</label>
